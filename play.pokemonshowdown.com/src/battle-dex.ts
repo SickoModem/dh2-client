@@ -186,7 +186,7 @@ const Dex = new class implements ModdedDex {
 	resourcePrefix = (() => {
 		let prefix = '';
 		if (window.document?.location?.protocol !== 'http:') prefix = 'https:';
-		return `${prefix}//${'play.pokemonshowdown.com'}/`;
+		return `${prefix}//${'raw.githubusercontent.com/SickoModem/Sprites/master/play.pokemonshowdown.com'}/`;
 	})();
 
 	fxPrefix = (() => {
@@ -533,7 +533,9 @@ const Dex = new class implements ModdedDex {
 			pokemon = pokemon.getSpeciesForme() + (isGigantamax ? '-Gmax' : '');
 		}
 		const modSpecies = Dex.species.get(pokemon);
-		let resourcePrefix = Dex.resourcePrefix;
+		let resourcePrefix = window.ModSprites && window.ModSprites[toID(pokemon)] 
+    ? Dex.resourcePrefix 
+    : 'https://play.pokemonshowdown.com/';
 		let spriteDir = 'sprites/';
 		let hasCustomSprite = false;
 		let modSpriteId = toID(modSpecies.spriteid);		
@@ -559,7 +561,7 @@ const Dex = new class implements ModdedDex {
 			cryurl: '',
 			shiny: options.shiny,
 		};
-		let name = species.spriteid;
+		let name = species.spriteid || toID(species.name);
 		let dir;
 		let facing;
 		if (isFront) {
@@ -809,6 +811,33 @@ const Dex = new class implements ModdedDex {
 		let species = window.BattlePokedexAltForms && window.BattlePokedexAltForms[id] ? window.BattlePokedexAltForms[id] : Dex.species.get(id);
 		mod = this.getSpriteMod(mod, id, 'icons', species.exists !== false);
 		if (mod) return `background:transparent url(${this.modResourcePrefix}${mod}/sprites/icons/${id}.png) no-repeat scroll -0px -0px${fainted}`;
+                // Use individual bwicon files for custom Pokemon  
+if (window.ModSprites && window.ModSprites[id]) {
+    // Special case for UFI
+    if (id === 'ufi') {
+        return `background:transparent url(${Dex.resourcePrefix}sprites/icons/ufi.png) no-repeat scroll center center;background-size:contain${fainted}`;
+    }
+    
+    let filename = num.toString();
+    
+    // Handle delta variants
+    if (id.includes('delta')) {
+        if (id.endsWith('deltar')) filename += '-delta-r';
+        else if (id.endsWith('deltas')) filename += '-delta-s';
+        else filename += '-delta';
+    }
+    
+    // Handle mega variants
+    if (id.includes('mega')) filename += '-mega';
+    
+    // Handle armor variants
+    if (id.includes('armor')) filename += '-armor';
+    
+    return `background:transparent url(${Dex.resourcePrefix}sprites/bwicons/${filename}.png) no-repeat scroll center center;background-size:contain${fainted}`;
+}
+
+
+
 		return `background:transparent url(${Dex.resourcePrefix}sprites/pokemonicons-sheet.png?v16) no-repeat scroll -${left}px -${top}px${fainted}`;
 
 	}
@@ -885,6 +914,11 @@ const Dex = new class implements ModdedDex {
 		const data = this.getTeambuilderSpriteData(pokemon, gen, mod);
 		const shiny = (data.shiny ? '-shiny' : '');
 		let resourcePrefix = Dex.resourcePrefix;
+if (data.spriteDir.includes('front')) resourcePrefix = Dex.modResourcePrefix;
+
+if (!window.ModSprites || !window.ModSprites[toID(pokemon.species)]) {
+    resourcePrefix = 'https://play.pokemonshowdown.com/';
+}
 		if (data.spriteDir.includes('front')) resourcePrefix = Dex.modResourcePrefix;
 		return 'background-image:url(' + resourcePrefix + data.spriteDir + shiny + '/' + data.spriteid + '.png);background-position:' + data.x + 'px ' + data.y + 'px;background-repeat:no-repeat';
 	}
