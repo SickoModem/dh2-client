@@ -813,17 +813,23 @@ const Dex = new class implements ModdedDex {
 		if (mod) return `background:transparent url(${this.modResourcePrefix}${mod}/sprites/icons/${id}.png) no-repeat scroll -0px -0px${fainted}`;
                 // Use individual bwicon files for custom Pokemon  
 if (window.ModSprites && window.ModSprites[id]) {
-    // Special case for UFI
+    // Special case only for UFI (no dex number at all)
     if (id === 'ufi') {
-        return `background:transparent url(${Dex.resourcePrefix}sprites/icons/ufi.png) no-repeat scroll center center;background-size:contain${fainted}`;
+        return `background:transparent url(${Dex.resourcePrefix}sprites/bwicons/ufi.png) no-repeat scroll center center;background-size:contain${fainted}`;
     }
     
-    let filename = num.toString();
+    // Get original species num (before it was zeroed out)
+    let species = window.BattlePokedexAltForms && window.BattlePokedexAltForms[id] ? window.BattlePokedexAltForms[id] : Dex.species.get(id);
+    let filename = species.num ? species.num.toString() : num.toString();
     
     // Handle delta variants
     if (id.includes('delta')) {
         if (id.endsWith('deltar')) filename += '-delta-r';
         else if (id.endsWith('deltas')) filename += '-delta-s';
+        else if (id.endsWith('deltaf')) filename += '-delta-f';
+        else if (id.endsWith('deltaw')) filename += '-delta-w';
+        else if (id.endsWith('deltab')) filename += '-delta-b';
+        else if (id.endsWith('deltac')) filename += '-delta-c';
         else filename += '-delta';
     }
     
@@ -833,7 +839,7 @@ if (window.ModSprites && window.ModSprites[id]) {
     // Handle armor variants
     if (id.includes('armor')) filename += '-armor';
     
-    return `background:transparent url(${Dex.resourcePrefix}sprites/bwicons/${filename}.png) no-repeat scroll center center;background-size:contain${fainted}`;
+    return `background:transparent url(${Dex.resourcePrefix}sprites/bwicons/${filename}.png) no-repeat scroll center center;background-size:contain;image-rendering:auto${fainted}`;
 }
 
 
